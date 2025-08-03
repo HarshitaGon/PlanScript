@@ -1,46 +1,92 @@
 {% extends 'layouts/app.html' %}
 
 {% block content %}
+<div class="min-h-screen bg-gray-100 dark:bg-gray-900 py-10 px-4 transition-colors duration-300">
+  <div class="max-w-6xl mx-auto">
 
-<div class="container">
-    <div class="row justify-content-center mt-4">
-        <div class="col-sm-8 card p-4">
+    <!-- Animated Hero Section -->
+    <section class="relative text-center mb-12 overflow-hidden">
+      <div class="relative z-10 animate-fade-slide">
+        <h2 class="text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text">
+          Organize Your Day Effortlessly
+        </h2>
+        <p class="mt-4 text-lg text-gray-700 dark:text-gray-300">Plan. Track. Complete. — Your smart daily task planner</p>
+      </div>
 
-            {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <ul class="alert alert-success">
-                    {% for message in messages %}
-                    <li>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-            {% endwith %}
+    </section>
 
-            <h3 class="text-muted text-center mb-3">PlanScript - Plan. Track. Complete</h3>
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul class="mb-4 p-4 bg-green-100 dark:bg-green-200 border border-green-300 text-green-800 rounded-md shadow">
+      {% for message in messages %}
+      <li>{{ message }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
 
-            <form action="{{ url_for('index', todo_id = todo.id) if todo else url_for('index')}}" method="post">
-                <div class="input-group mb-3">
-                    <input type="text" name="title" placeholder="Enter title" class="form-control"value="{{todo.title if todo else ''}}">
-                    <div class="input-group-append">
-                        <button class="btn btn-dark" type="submit">Save</button>
-                    </div>
-                </div>
+    <!-- Form Section -->
+    <form method="POST" action="{{ url_for('index', todo_id=todo.id) if todo else url_for('index') }}"
+      class="bg-white dark:bg-gray-800 shadow-lg rounded-2xl px-6 py-6 mb-10 max-w-3xl mx-auto flex flex-col md:flex-row items-center gap-4">
+      <input type="text" name="title" value="{{ todo.title if todo else '' }}"
+        class="flex-1 px-4 py-3 text-base bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:text-gray-100"
+        placeholder="What do you want to accomplish?" required />
+
+      <select name="status"
+        class="px-4 py-3 text-base bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:text-gray-100">
+        <option value="todo" {% if todo and todo.status == 'todo' %}selected{% endif %}>📝 To Do</option>
+        <option value="in-progress" {% if todo and todo.status == 'in-progress' %}selected{% endif %}>⏳ In Progress</option>
+        <option value="completed" {% if todo and todo.status == 'completed' %}selected{% endif %}>✅ Completed</option>
+      </select>
+
+      <button type="submit"
+        class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 transition">
+        {{ 'Update' if todo else 'Add' }}
+      </button>
+    </form>
+
+    
+    <!-- 3 Column Task Layout -->
+    <div class="grid md:grid-cols-3 gap-6">
+      {% set columns = [
+        ('todo', '📋 To Do', 'orange', 'orange-50', 'orange-600'),
+        ('in-progress', '⏳ In Progress', 'yellow', 'yellow-50', 'yellow-600'),
+        ('completed', '✅ Completed', 'green', 'green-50', 'green-600')
+      ] %}
+
+      {% for key, title, color, bg, text in columns %}
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold text-{{ text }} mb-4">{{ title }}</h2>
+        {% for task in todos if task.status == key %}
+        <div class="bg-{{ bg }} dark:bg-opacity-10 p-3 rounded-md shadow-sm mb-3 flex justify-between items-center">
+          {% if key != 'completed' %}
+          <form method="POST" action="{{ url_for('update_status', todo_id=task.id) }}">
+            <label class="flex items-center gap-2">
+              <input type="checkbox" name="status" value="completed" onchange="this.form.submit()" />
+              <span class="text-gray-800 dark:text-gray-200 break-words">{{ task.title }}</span>
+            </label>
+          </form>
+          {% else %}
+          <label class="flex items-center gap-2">
+            <input type="checkbox" checked disabled />
+            <span class="text-gray-500 dark:text-gray-400 break-words line-through">{{ task.title }}</span>
+          </label>
+          {% endif %}
+
+          <div class="flex gap-2">
+            <a href="/{{ task.id }}" class="text-sm bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500 transition-all">Edit</a>
+            <form method="POST" action="{{ url_for('delete', todo_id=task.id) }}">
+              <button class="text-sm bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition-all">Delete</button>
             </form>
-
-            {% for todo in todos %}
-            <div class="row mt-2">
-                <div class="col-8">{{ todo.title}}</div>
-                <div class="col-4 text-right">
-                    <a href="/{{todo.id}}" class="btn btn-dark btn-sm">Edit</a>
-                    <form class="d-inline" method="POST" action="{{ url_for('delete', todo_id=todo.id)}}">
-                        <button type="submit" class = "btn btn-danger btn-sm">Delete</button>
-                    </form>
-                </div>
-            </div>
-            {% endfor %}
+          </div>
         </div>
+        {% else %}
+        <p class="text-sm text-gray-400 dark:text-gray-500">No tasks here.</p>
+        {% endfor %}
+      </div>
+      {% endfor %}
     </div>
+  </div>
 </div>
-
-
 {% endblock %}
