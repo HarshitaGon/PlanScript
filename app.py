@@ -31,7 +31,7 @@ def index(todo_id=None):
             todo = Todo.query.get(todo_id)
             if todo:
                 todo.title = title
-                tudo.status = status
+                todo.status = status
                 db.session.commit()
                 flash('Todo item updated successfully', 'success')
 
