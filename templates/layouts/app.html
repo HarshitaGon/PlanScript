@@ -40,16 +40,15 @@
   <!-- 🔷 Header Section -->
   <header class="flex items-center justify-between px-6 py-4 shadow-md bg-white dark:bg-gray-800">
     <div class="flex items-center gap-3 animate-fade-slide">
-      <img src="{{ url_for('static', filename='logo.png') }}" alt="PlanScript Logo" class="h-10 w-10 rounded-full shadow-md" />
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="PlanScript Logo"
+        class="h-10 w-10 rounded-full shadow-md" />
       <h1 class="text-2xl font-bold text-blue-700 dark:text-blue-400">PlanScript</h1>
     </div>
 
     <!-- Dark Mode Toggle -->
-    <button
-      id="darkToggle"
+    <button id="darkToggle"
       class="text-2xl p-2 rounded-full hover:scale-110 transition-transform duration-300 bg-gray-200 dark:bg-gray-700"
-      title="Toggle Theme"
-    >
+      title="Toggle Theme">
       🌙
     </button>
   </header>
