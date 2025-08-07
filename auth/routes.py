@@ -3,7 +3,7 @@ from werkzeug.security import generate_password_hash
 from models import db
 from models.user import User
 from .forms import RegisterForm, LoginForm
-from flask_login import login_user
+from flask_login import login_user, logout_user, login_required
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -69,3 +69,13 @@ def login():
         print("Form Errors:", form.errors)
 
     return render_template('login.html', form=form)
+
+# ------------------- LOGOUT ------------------- #
+
+@auth_bp.route("/logout", methods=['POST'])
+@login_required
+def logout():
+    logout_user()
+    flash("You have been logged out.", "info")
+    return redirect(url_for('auth.login'))
+

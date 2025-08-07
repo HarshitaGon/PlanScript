@@ -51,6 +51,14 @@
       title="Toggle Theme">
       🌙
     </button>
+
+    <!-- Logout Button -->
+    <form action="{{ url_for('auth.logout') }}" method="POST">
+      <button type="submit"
+        class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200">
+        Logout
+      </button>
+    </form>
   </header>
 
   {% block content %} {% endblock %}
