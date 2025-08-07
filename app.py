@@ -29,7 +29,8 @@ login_manager.init_app(app)
 class Todo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
-    status = db.Column(db.String(50), nullable=False, default='todo')  # ✅ New field
+    status = db.Column(db.String(50), nullable=False, default='todo')
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 # ✅ Initialize database tables
 with app.app_context():
@@ -53,25 +54,32 @@ def index(todo_id=None):
         status = request.form.get('status') or 'todo'
 
         if todo_id is None:
-            todo = Todo(title=title, status=status)  # 👈 default status
+            todo = Todo(title=title, status=status, user_id = current_user.id)
             db.session.add(todo)
             db.session.commit()
             flash('Todo item added successfully', 'success')
         else:
             todo = Todo.query.get(todo_id)
-            if todo:
+            if todo and todo.user_id == current_user.id:
                 todo.title = title
                 todo.status = status
                 db.session.commit()
                 flash('Todo item updated successfully', 'success')
+
+            else:
+                flash('Unauthorized', 'danger')
 
         return redirect(url_for('index'))
 
     todo = None
     if todo_id is not None:
         todo = Todo.query.get(todo_id)
+        if todo and todo.user_id != current_user.id:        # ✅ restrict access
+            flash("Not authorized", "danger")
+            return redirect(url_for('index'))
 
-    todos = Todo.query.order_by(Todo.id.desc()).all()
+    # ✅ Show only logged-in user's todos
+    todos = Todo.query.filter_by(user_id = current_user.id).order_by(Todo.id.desc()).all()
 
     # 👇 group by status
     todo_tasks = [t for t in todos if t.status == 'todo']
@@ -92,11 +100,17 @@ def index(todo_id=None):
 @app.route('/todo-delete/<int:todo_id>', methods=["POST"])
 @login_required
 def delete(todo_id):
-    todo = Todo.query.get(todo_id)
-    if todo:
-        db.session.delete(todo)
-        db.session.commit()
-        flash('Todo item deleted successfully', 'success')
+    todo = Todo.query.get_or_404(todo_id)
+
+    # Step 1: Check if todo belongs to current user
+    if todo.user_id != current_user.id:
+        flash("⚠️ You are not authorized to delete this task.", "danger")
+        return redirect(url_for('index'))
+
+    # Step 2: If valid, proceed to delete
+    db.session.delete(todo)
+    db.session.commit()
+    flash('Todo item deleted successfully', 'success')
 
     return redirect(url_for('index'))
 
@@ -105,11 +119,20 @@ def delete(todo_id):
 @login_required
 def update_status(todo_id):
     todo = Todo.query.get_or_404(todo_id)
+    # ✅ Step 1: Check ownership
+    if todo.user_id != current_user.id:
+        flash("⚠️ You are not authorized to update this task.", "danger")
+        return redirect(url_for('index'))
+
+    # ✅ Step 2: Update only if status is valid
     new_status = request.form.get('status')
     if new_status in ['todo', 'progress', 'completed']:
         todo.status = new_status
         db.session.commit()
         flash('Task status updated!', 'success')
+
+    else:
+        flash("Invalid status update.", "danger")
     return redirect(url_for('index'))
 
 # ✅ Import authentication routes from routes.py

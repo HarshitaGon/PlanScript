@@ -45,20 +45,22 @@
       <h1 class="text-2xl font-bold text-blue-700 dark:text-blue-400">PlanScript</h1>
     </div>
 
-    <!-- Dark Mode Toggle -->
-    <button id="darkToggle"
-      class="text-2xl p-2 rounded-full hover:scale-110 transition-transform duration-300 bg-gray-200 dark:bg-gray-700"
-      title="Toggle Theme">
-      🌙
-    </button>
-
-    <!-- Logout Button -->
-    <form action="{{ url_for('auth.logout') }}" method="POST">
-      <button type="submit"
-        class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200">
-        Logout
+    <div class="flex items-center gap-4 ml-auto">
+      <!-- Dark Mode Toggle -->
+      <button id="darkToggle"
+        class="text-2xl p-2 rounded-full hover:scale-110 transition-transform duration-300 bg-gray-200 dark:bg-gray-700"
+        title="Toggle Theme">
+        🌙
       </button>
-    </form>
+
+      <!-- Logout Button -->
+      <form action="{{ url_for('auth.logout') }}" method="POST">
+        <button type="submit"
+          class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200">
+          Logout
+        </button>
+      </form>
+    </div>
   </header>
 
   {% block content %} {% endblock %}
