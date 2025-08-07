@@ -53,13 +53,27 @@
         🌙
       </button>
 
-      <!-- Logout Button -->
-      <form action="{{ url_for('auth.logout') }}" method="POST">
-        <button type="submit"
-          class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200">
-          Logout
+
+      <!-- Profile Dropdown -->
+      <div class="relative inline-block text-left" x-data="{ open: false }">
+        <!-- Profile Button -->
+        <button @click="open = !open" class="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 dark:border-gray-600">
+          <img src="{{ url_for('static', filename='default-avatar.png') }}" alt="User Avatar" class="w-full h-full object-cover">
         </button>
-      </form>
+
+        <!-- Dropdown Box -->
+        <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 p-4">
+          <p class="text-sm font-medium text-gray-900 dark:text-white">{{ current_user.name }}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-300 mb-3">{{ current_user.email }}</p>
+
+          <form action="{{ url_for('auth.logout') }}" method="POST">
+            <button type="submit"
+              class="w-full text-left px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition">
+              Logout
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -85,6 +99,9 @@
       localStorage.setItem('theme', isDark ? 'dark' : 'light');
     });
   </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
 </body>
 
 </html>
