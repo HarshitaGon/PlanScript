@@ -17,7 +17,12 @@
       </div>
     </section>
 
-
+    <!-- Welcome Message -->
+    <div class="text-center mb-8 animate-fade-slide">
+      <p class="text-2xl font-semibold text-gray-800 dark:text-gray-200">
+        Welcome, {{ current_user.username }}!
+      </p>
+    </div>
 
     <!-- Flash messages -->
     {% with messages = get_flashed_messages() %}
