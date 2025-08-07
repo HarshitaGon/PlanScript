@@ -1,10 +1,13 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, session
 from werkzeug.security import generate_password_hash
 from models import db
 from models.user import User
-from .forms import RegisterForm
+from .forms import RegisterForm, LoginForm
+from flask_login import login_user
 
 auth_bp = Blueprint("auth", __name__)
+
+# ------------------- REGISTER ------------------- #
 
 @auth_bp.route("/register", methods = ['GET', 'POST'])
 def register():
@@ -41,7 +44,28 @@ def register():
     return render_template('register.html', form = form)
 
 
-# ✅ ADD THIS PLACEHOLDER LOGIN ROUTE TO FIX BuildError
+# ------------------- LOGIN ------------------- #
+
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
-    return "Login page coming soon"
+    form = LoginForm()
+
+    if form.validate_on_submit():
+        print("✅ Login Form validated")
+
+        user = User.query.filter_by(username = form.username.data).first()
+
+        if user and user.check_password(form.password.data):
+            session['user_id'] = user.id
+            login_user(user)  # 👈 important: tells Flask-Login the user is authenticated
+            flash("Logged in successfully!", "success")
+            return redirect(url_for('index'))         # Change to your actual dashboard route
+
+        else:
+            flash("Invalid username or password.", "danger")
+
+    else:
+        print("❌ Login Form NOT validated")
+        print("Form Errors:", form.errors)
+
+    return render_template('login.html', form=form)

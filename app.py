@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 import sqlite3
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_login import login_required, current_user
 from models import db  # 👈 import User model for authentication
 from models.user import User  # ✅ User model
 from auth.routes import auth_bp   # ✅ import the Blueprint#
@@ -12,7 +13,6 @@ from flask_migrate import Migrate
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SECRET_KEY'] = 'key'  # ✅ moved to standard config pattern
-# app.secret_key = 'key'
 db.init_app(app)
 # db = SQLAlchemy(app)
 
@@ -20,7 +20,6 @@ app.register_blueprint(auth_bp)
 
 
 migrate = Migrate(app, db)
-
 
 
 # ✅ Setup Flask-Login
@@ -33,14 +32,14 @@ class Todo(db.Model):
     title = db.Column(db.String(200), nullable=False)
     status = db.Column(db.String(50), nullable=False, default='todo')  # ✅ New field
 
+# ✅ Initialize database tables
+with app.app_context():
+    db.create_all()
+
 # ✅ User loader function for Flask-Login
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
-
-# ✅ Initialize database tables
-with app.app_context():
-    db.create_all()
 
 # -----------------------
 # Main Todo App Routes
@@ -48,6 +47,7 @@ with app.app_context():
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/<int:todo_id>', methods=['GET', 'POST'])
+@login_required
 def index(todo_id=None):
     if request.method == 'POST':
         title = request.form.get('title')
@@ -81,6 +81,7 @@ def index(todo_id=None):
 
     return render_template(
         'index.html',
+        user=current_user,
         todos=todos,
         todo=todo,
         todo_tasks=todo_tasks,
@@ -90,6 +91,7 @@ def index(todo_id=None):
 
 
 @app.route('/todo-delete/<int:todo_id>', methods=["POST"])
+@login_required
 def delete(todo_id):
     todo = Todo.query.get(todo_id)
     if todo:
@@ -101,6 +103,7 @@ def delete(todo_id):
 
 
 @app.route('/update_status/<int:todo_id>', methods=['POST'])
+@login_required
 def update_status(todo_id):
     todo = Todo.query.get_or_404(todo_id)
     new_status = request.form.get('status')
