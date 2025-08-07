@@ -1,53 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Login | PlanScript</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <title>Login | PlanScript</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font for cleaner typography -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    @keyframes gradientMove {
+      0% {
+        background-position: 0% 50%;
+      }
+      100% {
+        background-position: 100% 50%;
+      }
+    }
+
+    .gradient-text {
+      background: linear-gradient(90deg, #00C6FF, #0072FF, #00C6FF);
+      background-size: 200% 200%;
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      animation: gradientMove 4s linear infinite;
+    }
+
+    body::before {
+      content: '';
+      background-image: url('{{ url_for('static', filename='login-background.webp') }}');
+      background-size: cover;
+      background-position: center;
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      filter: brightness(0.5);
+    }
+
+    body::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(0,0,0,0.2), rgba(0,0,0,0.8));
+      backdrop-filter: blur(5px);
+      z-index: -1;
+    }
+
+    .card-glow {
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      background-color: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 0 20px rgba(0, 183, 255, 0.2);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card-glow:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 25px rgba(0, 183, 255, 0.4);
+    }
+
+    .floating-label {
+      position: relative;
+    }
+
+    .floating-label input {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 1.25rem 1rem 0.5rem;
+      color: white;
+      width: 100%;
+      border-radius: 0.5rem;
+    }
+
+    .floating-label label {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      color: rgba(255,255,255,0.7);
+      font-size: 0.875rem;
+      pointer-events: none;
+      transition: 0.2s ease all;
+    }
+
+    .floating-label input:focus + label,
+    .floating-label input:not(:placeholder-shown) + label {
+      top: 0.4rem;
+      font-size: 0.75rem;
+      color: #00cfff;
+    }
+
+    .btn-loading:disabled::after {
+      content: '';
+      border: 2px solid white;
+      border-top-color: transparent;
+      border-radius: 50%;
+      width: 1rem;
+      height: 1rem;
+      animation: spin 0.6s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 0.5rem;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
-    <div class="bg-white p-8 rounded shadow-md w-full max-w-md">
-        <h2 class="text-2xl font-bold mb-6 text-center">Login to PlanScript</h2>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="mb-4">
-                    {% for category, message in messages %}
-                        <div class="text-sm text-white px-4 py-2 rounded bg-{{ 'red-500' if category == 'danger' else 'green-500' }}">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
+<body class="flex items-center justify-center min-h-screen relative overflow-hidden text-white px-4">
 
-        <form method="POST" class="space-y-4">
-            {{ form.hidden_tag() }}
+  <div class="card-glow p-10 rounded-2xl shadow-2xl w-full max-w-md animate-fadeIn">
 
-            <div>
-                {{ form.username.label(class="block text-sm font-medium text-gray-700") }}
-                {{ form.username(class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded") }}
-                {% if form.username.errors %}
-                    <p class="text-red-500 text-sm mt-1">{{ form.username.errors[0] }}</p>
-                {% endif %}
-            </div>
-
-            <div>
-                {{ form.password.label(class="block text-sm font-medium text-gray-700") }}
-                {{ form.password(class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded") }}
-                {% if form.password.errors %}
-                    <p class="text-red-500 text-sm mt-1">{{ form.password.errors[0] }}</p>
-                {% endif %}
-            </div>
-
-            <div>
-                {{ form.submit(class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded") }}
-            </div>
-        </form>
-
-        <p class="text-center text-sm mt-4">Don’t have an account?
-            <a href="{{ url_for('auth.register') }}" class="text-blue-500 hover:underline">Register here</a>
-        </p>
+    <!-- Optional Logo -->
+    <div class="flex justify-center mb-6">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="PlanScript Logo" class="w-16 h-16 rounded-full shadow-lg">
     </div>
+
+    <!-- Animated Heading -->
+    <h2 class="text-4xl font-extrabold mb-8 text-center gradient-text drop-shadow-xl tracking-wide">
+      Welcome to PlanScript
+    </h2>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-4 space-y-2">
+          {% for category, message in messages %}
+            <div class="text-sm text-white px-4 py-2 rounded bg-{{ 'red-500' if category == 'danger' else 'green-500' }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Login Form -->
+    <form method="POST" class="space-y-6" onsubmit="this.querySelector('button').disabled=true">
+      {{ form.hidden_tag() }}
+
+      <div class="floating-label">
+        {{ form.username(class="peer placeholder-transparent focus:outline-none focus:ring-2 focus:ring-blue-400") }}
+        {{ form.username.label(class="absolute") }}
+        {% if form.username.errors %}
+          <p class="text-red-400 text-sm mt-1">{{ form.username.errors[0] }}</p>
+        {% endif %}
+      </div>
+
+      <div class="floating-label">
+        {{ form.password(class="peer placeholder-transparent focus:outline-none focus:ring-2 focus:ring-blue-400") }}
+        {{ form.password.label(class="absolute") }}
+        {% if form.password.errors %}
+          <p class="text-red-400 text-sm mt-1">{{ form.password.errors[0] }}</p>
+        {% endif %}
+      </div>
+
+      <div>
+        {{ form.submit(class="btn-loading w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-lg") }}
+      </div>
+    </form>
+
+    <!-- Register Link -->
+    <p class="text-center text-sm mt-6 text-white/80">
+      Don’t have an account?
+      <a href="{{ url_for('auth.register') }}" class="text-blue-300 hover:underline font-medium">Register here</a>
+    </p>
+
+  </div>
 </body>
 </html>
