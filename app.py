@@ -1,19 +1,50 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 import sqlite3
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
+from models import db  # 👈 import User model for authentication
+from models.user import User  # ✅ User model
+from auth.routes import auth_bp   # ✅ import the Blueprint#
+from flask_migrate import Migrate
+
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
-app.secret_key = 'key'
-db = SQLAlchemy(app)
+app.config['SECRET_KEY'] = 'key'  # ✅ moved to standard config pattern
+# app.secret_key = 'key'
+db.init_app(app)
+# db = SQLAlchemy(app)
+
+app.register_blueprint(auth_bp)
+
+
+migrate = Migrate(app, db)
+
+
+
+# ✅ Setup Flask-Login
+login_manager = LoginManager()
+login_manager.login_view = 'auth.login'  # If unauthorized, redirect to this route
+login_manager.init_app(app)
 
 class Todo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     status = db.Column(db.String(50), nullable=False, default='todo')  # ✅ New field
 
+# ✅ User loader function for Flask-Login
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+# ✅ Initialize database tables
 with app.app_context():
     db.create_all()
+
+# -----------------------
+# Main Todo App Routes
+# -----------------------
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/<int:todo_id>', methods=['GET', 'POST'])
@@ -79,6 +110,9 @@ def update_status(todo_id):
         flash('Task status updated!', 'success')
     return redirect(url_for('index'))
 
+# ✅ Import authentication routes from routes.py
+from auth.routes import *  # 👈 This pulls in /login, /register, /logout
 
+# ✅ Start the app
 if __name__ == '__main__':
     app.run(debug=True)
