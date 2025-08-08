@@ -22,7 +22,3 @@ class User(UserMixin, db.Model):  # ✅ Now inherits from db.Model
 
     def __repr__(self):
         return f"<User {self.username}>"
-
-
-
-

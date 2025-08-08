@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template, request, redirect, url_for, flash
 import sqlite3
 from flask_sqlalchemy import SQLAlchemy
@@ -5,18 +6,21 @@ from flask_login import LoginManager
 from flask_login import login_required, current_user
 from models import db  # 👈 import User model for authentication
 from models.user import User  # ✅ User model
+from models.todo import Todo    # ✅ Todo model
 from auth.routes import auth_bp   # ✅ import the Blueprint#
 from flask_migrate import Migrate
 
-
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+
+# Absolute path for DB
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+DB_PATH = os.path.join(BASE_DIR, "instance", "database.db")
+
+app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_PATH}"
 app.config['SECRET_KEY'] = 'key'  # ✅ moved to standard config pattern
 db.init_app(app)
-# db = SQLAlchemy(app)
 
 app.register_blueprint(auth_bp)
-
 
 migrate = Migrate(app, db)
 
@@ -25,16 +29,6 @@ migrate = Migrate(app, db)
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'  # If unauthorized, redirect to this route
 login_manager.init_app(app)
-
-class Todo(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    status = db.Column(db.String(50), nullable=False, default='todo')
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
-# ✅ Initialize database tables
-with app.app_context():
-    db.create_all()
 
 # ✅ User loader function for Flask-Login
 @login_manager.user_loader
