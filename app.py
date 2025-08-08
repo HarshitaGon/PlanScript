@@ -7,22 +7,32 @@ from flask_login import login_required, current_user
 from models import db  # 👈 import User model for authentication
 from models.user import User  # ✅ User model
 from models.todo import Todo    # ✅ Todo model
-from auth.routes import auth_bp   # ✅ import the Blueprint#
 from flask_migrate import Migrate
 
 app = Flask(__name__)
 
-# Absolute path for DB
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-DB_PATH = os.path.join(BASE_DIR, "instance", "database.db")
+# Detect environment (Render ya Local)
+if os.environ.get("RENDER"):
+    # Render deployment
+    DB_PATH = os.path.join("/tmp", "database.db")
+else:
+    # Local development
+    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+    DB_PATH = os.path.join(BASE_DIR, "instance", "database.db")
 
+# Database URI
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_PATH}"
-app.config['SECRET_KEY'] = 'key'  # ✅ moved to standard config pattern
+
+# Secret Key from Environment Variable
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'key')
+
+# Initialize extensions
 db.init_app(app)
-
-app.register_blueprint(auth_bp)
-
 migrate = Migrate(app, db)
+
+# Import and register blueprints after db init
+from auth.routes import auth_bp
+app.register_blueprint(auth_bp)
 
 
 # ✅ Setup Flask-Login
