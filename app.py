@@ -11,11 +11,6 @@ from flask_migrate import Migrate
 
 app = Flask(__name__)
 
-# Detect environment (Render ya Local)
-# if os.environ.get("RENDER"):
-#     # Render deployment
-#     DB_PATH = os.path.join("/tmp", "database.db")
-
 # Local development
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 DB_PATH = os.path.join(BASE_DIR, "instance", "database.db")
@@ -35,12 +30,12 @@ from auth.routes import auth_bp
 app.register_blueprint(auth_bp)
 
 
-# ✅ Setup Flask-Login
+# Setup Flask-Login
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'  # If unauthorized, redirect to this route
 login_manager.init_app(app)
 
-# ✅ User loader function for Flask-Login
+# User loader function for Flask-Login
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -78,14 +73,14 @@ def index(todo_id=None):
     todo = None
     if todo_id is not None:
         todo = Todo.query.get(todo_id)
-        if todo and todo.user_id != current_user.id:        # ✅ restrict access
+        if todo and todo.user_id != current_user.id:        # restrict access
             flash("Not authorized", "danger")
             return redirect(url_for('index'))
 
-    # ✅ Show only logged-in user's todos
+    # Show only logged-in user's todos
     todos = Todo.query.filter_by(user_id = current_user.id).order_by(Todo.id.desc()).all()
 
-    # 👇 group by status
+    # group by status
     todo_tasks = [t for t in todos if t.status == 'todo']
     progress_tasks = [t for t in todos if t.status == 'progress']
     completed_tasks = [t for t in todos if t.status == 'completed']
@@ -108,7 +103,7 @@ def delete(todo_id):
 
     # Step 1: Check if todo belongs to current user
     if todo.user_id != current_user.id:
-        flash("⚠️ You are not authorized to delete this task.", "danger")
+        flash("You are not authorized to delete this task.", "danger")
         return redirect(url_for('index'))
 
     # Step 2: If valid, proceed to delete
@@ -123,12 +118,12 @@ def delete(todo_id):
 @login_required
 def update_status(todo_id):
     todo = Todo.query.get_or_404(todo_id)
-    # ✅ Step 1: Check ownership
+    # Step 1: Check ownership
     if todo.user_id != current_user.id:
-        flash("⚠️ You are not authorized to update this task.", "danger")
+        flash("You are not authorized to update this task.", "danger")
         return redirect(url_for('index'))
 
-    # ✅ Step 2: Update only if status is valid
+    # Step 2: Update only if status is valid
     new_status = request.form.get('status')
     if new_status in ['todo', 'progress', 'completed']:
         todo.status = new_status
@@ -139,9 +134,9 @@ def update_status(todo_id):
         flash("Invalid status update.", "danger")
     return redirect(url_for('index'))
 
-# ✅ Import authentication routes from routes.py
-from auth.routes import *  # 👈 This pulls in /login, /register, /logout
+# Import authentication routes from routes.py
+from auth.routes import *  # This pulls in /login, /register, /logout
 
-# ✅ Start the app
+# Start the app
 if __name__ == '__main__':
     app.run(debug=True)

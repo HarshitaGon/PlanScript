@@ -51,7 +51,7 @@ def login():
     form = LoginForm()
 
     if form.validate_on_submit():
-        print("✅ Login Form validated")
+        print("Login Form validated")
 
         user = User.query.filter_by(username=form.username.data).first()
 
@@ -66,8 +66,8 @@ def login():
         else:
             flash("Invalid username or password.", "danger")
 
-    elif request.method == "POST":  # ✅ only log failure for POST
-        print("❌ Login Form NOT validated")
+    elif request.method == "POST":  # only log failure for POST
+        print("Login Form NOT validated")
         print("Form Errors:", form.errors)
 
     return render_template('login.html', form=form)
