@@ -14,7 +14,7 @@ def register():
     form = RegisterForm()
 
     if form.validate_on_submit():
-        print("✅ Form validated successfully")
+        print("Form validated successfully")
 
         existing_user = User.query.filter_by(email = form.email.data).first()
 
@@ -37,8 +37,8 @@ def register():
         return redirect(url_for('auth.login'))
 
     else:
-        print("❌ Form NOT validated")
-        print("Form Errors:", form.errors)  # 🪵 DEBUG THIS
+        print("Form NOT validated")
+        print("Form Errors:", form.errors)  # DEBUG THIS
 
 
     return render_template('register.html', form = form)
@@ -53,22 +53,48 @@ def login():
     if form.validate_on_submit():
         print("✅ Login Form validated")
 
-        user = User.query.filter_by(username = form.username.data).first()
+        user = User.query.filter_by(username=form.username.data).first()
 
         if user and user.check_password(form.password.data):
             session['user_id'] = user.id
-            login_user(user)  # 👈 important: tells Flask-Login the user is authenticated
+            login_user(user)
             flash("Logged in successfully!", "success")
-            return redirect(url_for('index'))         # Change to your actual dashboard route
+
+            next_page = request.args.get('next')
+            return redirect(next_page or url_for('index'))
 
         else:
             flash("Invalid username or password.", "danger")
 
-    else:
+    elif request.method == "POST":  # ✅ only log failure for POST
         print("❌ Login Form NOT validated")
         print("Form Errors:", form.errors)
 
     return render_template('login.html', form=form)
+
+# @auth_bp.route("/login", methods=["GET", "POST"])
+# def login():
+#     form = LoginForm()
+
+#     if form.validate_on_submit():
+#         print("Login Form validated")
+
+#         user = User.query.filter_by(username = form.username.data).first()
+
+#         if user and user.check_password(form.password.data):
+#             session['user_id'] = user.id
+#             login_user(user)  # important: tells Flask-Login the user is authenticated
+#             flash("Logged in successfully!", "success")
+#             return redirect(url_for('index'))         # Change to your actual dashboard route
+
+#         else:
+#             flash("Invalid username or password.", "danger")
+
+#     else:
+#         print("Login Form NOT validated")
+#         print("Form Errors:", form.errors)
+
+#     return render_template('login.html', form=form)
 
 # ------------------- LOGOUT ------------------- #
 
