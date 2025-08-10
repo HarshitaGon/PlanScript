@@ -4,21 +4,21 @@ import sqlite3
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_login import login_required, current_user
-from models import db  # 👈 import User model for authentication
-from models.user import User  # ✅ User model
-from models.todo import Todo    # ✅ Todo model
+from models import db  # import User model for authentication
+from models.user import User  # User model
+from models.todo import Todo    # Todo model
 from flask_migrate import Migrate
 
 app = Flask(__name__)
 
 # Detect environment (Render ya Local)
-if os.environ.get("RENDER"):
-    # Render deployment
-    DB_PATH = os.path.join("/tmp", "database.db")
-else:
-    # Local development
-    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-    DB_PATH = os.path.join(BASE_DIR, "instance", "database.db")
+# if os.environ.get("RENDER"):
+#     # Render deployment
+#     DB_PATH = os.path.join("/tmp", "database.db")
+
+# Local development
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+DB_PATH = os.path.join(BASE_DIR, "instance", "database.db")
 
 # Database URI
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_PATH}"
